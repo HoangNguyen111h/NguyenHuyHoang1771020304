@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test API Connection</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test API Connection - Student ID: 1771020311</h1>
+    
+    <button onclick="testHealth()">Test Server Health</button>
+    <button onclick="testMenuItems()">Test Menu Items</button>
+    <button onclick="testCustomers()">Test Customers</button>
+    <button onclick="testLogin()">Test Login</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:3000';
+        
+        function addResult(message, isSuccess = true) {
+            const div = document.createElement('div');
+            div.className = `result ${isSuccess ? 'success' : 'error'}`;
+            div.innerHTML = message;
+            document.getElementById('results').appendChild(div);
+        }
+        
+        async function testHealth() {
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addResult(`✅ Server Health: ${data.status} - Database: ${data.database}`);
+                } else {
+                    addResult(`❌ Health check failed: ${response.status}`, false);
+                }
+            } catch (error) {
+                addResult(`❌ Health check error: ${error.message}`, false);
+            }
+        }
+        
+        async function testMenuItems() {
+            try {
+                const response = await fetch(`${API_BASE}/api/menu-items`);
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    addResult(`✅ Menu Items: Loaded ${data.data.length} items`);
+                } else {
+                    addResult(`❌ Menu Items failed: ${data.error || 'Unknown error'}`, false);
+                }
+            } catch (error) {
+                addResult(`❌ Menu Items error: ${error.message}`, false);
+            }
+        }
+        
+        async function testCustomers() {
+            try {
+                const response = await fetch(`${API_BASE}/api/customers`);
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    addResult(`✅ Customers: Loaded ${data.data.length} customers`);
+                } else {
+                    addResult(`❌ Customers failed: ${data.error || 'Unknown error'}`, false);
+                }
+            } catch (error) {
+                addResult(`❌ Customers error: ${error.message}`, false);
+            }
+        }
+        
+        async function testLogin() {
+            try {
+                const response = await fetch(`${API_BASE}/api/customers/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'john.doe@email.com',
+                        password: 'password123'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    addResult(`✅ Login successful: ${data.data.full_name} (${data.data.email})`);
+                } else {
+                    addResult(`❌ Login failed: ${data.error || 'Invalid credentials'} (This is expected if no test user exists)`, false);
+                }
+            } catch (error) {
+                addResult(`❌ Login error: ${error.message}`, false);
+            }
+        }
+        
+        // Auto test on load
+        window.onload = function() {
+            addResult('🚀 Starting API tests...');
+            setTimeout(testHealth, 500);
+            setTimeout(testMenuItems, 1000);
+            setTimeout(testCustomers, 1500);
+        };
+    </script>
+</body>
+</html>
